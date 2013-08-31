@@ -1,5 +1,5 @@
 describe("AesUtil", function() {
-  it("encrypts and decrypts with AesUtil", function() {
+  it("encrypts and decrypts", function() {
     var iv = "F27D5C9927726BCEFE7510B1BDD3D137";
     var salt = "3FF2EC019C627B945225DEBAD71A01B6985FE84C95A70EB132882F88C0A59A55";
     var plainText = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy "
@@ -27,8 +27,9 @@ describe("AesUtil", function() {
         + "r5KCrLuLCUHJ6I+zT4Pj+Baa19YtkbQhMNcky0936/dDHYTvTSu/of4Jux7ze30+tFqzXsWZOGsABdV0byv+6q8XptJne61A/w==";
 
     var aesUtil = new AesUtil(keySize, iterationCount)
-    expect(aesUtil.encrypt(salt, iv, passPhrase, plainText)).toBe(cipherText);
-    
-    expect(aesUtil.decrypt(salt, iv, passPhrase, cipherText)).toBe(plainText);
+    var encrypt = aesUtil.encrypt(salt, iv, passPhrase, plainText);
+    expect(encrypt).toBe(cipherText);
+    var decrypt = aesUtil.decrypt(salt, iv, passPhrase, cipherText);
+    expect(decrypt).toBe(plainText);
   });
 });

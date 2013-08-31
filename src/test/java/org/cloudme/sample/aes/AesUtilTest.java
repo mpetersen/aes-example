@@ -35,14 +35,14 @@ public class AesUtilTest {
     @Test
     public void testEncrypt() {
         AesUtil util = new AesUtil(KEY_SIZE, ITERATION_COUNT);
-        String result = util.encrypt(SALT, IV, PASSPHRASE, PLAIN_TEXT);
-        assertEquals(CIPHER_TEXT, result);
+        String encrypt = util.encrypt(SALT, IV, PASSPHRASE, PLAIN_TEXT);
+        assertEquals(CIPHER_TEXT, encrypt);
     }
     
     @Test
     public void testDecrypt() {
         AesUtil util = new AesUtil(KEY_SIZE, ITERATION_COUNT);
-        String result = util.decrypt(SALT, IV, PASSPHRASE, CIPHER_TEXT);
-        assertEquals(PLAIN_TEXT, result);
+        String decrypt = util.decrypt(SALT, IV, PASSPHRASE, CIPHER_TEXT);
+        assertEquals(PLAIN_TEXT, decrypt);
     }
 }
