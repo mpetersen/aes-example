@@ -42,14 +42,13 @@ parameters, salt and IV are encoded in hex. This is useful to effectively count 
 
 1. Generate key:
 
-      var key = CryptoJS.PBKDF2(
-          passPhrase, 
-          CryptoJS.enc.Hex.parse(salt),
-          { keySize: this.keySize, iterations: this.iterationCount });
+          var key = CryptoJS.PBKDF2(
+              passPhrase, 
+              CryptoJS.enc.Hex.parse(salt),
+              { keySize: this.keySize, iterations: this.iterationCount });
 
-
-Note, that `this.keySize` is the size of the key in 4-byte blocks. So, if you want to use a 128-bit key, you have to 
-divide the number of bits by 32 to get the key size used for CryptoJS.
+    > Note, that `this.keySize` is the size of the key in 4-byte blocks. So, if you want to use a 128-bit key, you have to 
+    divide the number of bits by 32 to get the key size used for CryptoJS.
 
 2. Encrypt plaintext:
 
