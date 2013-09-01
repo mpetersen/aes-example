@@ -22,10 +22,10 @@ all parameters defined, the encryption process is the same for both, Java and Ja
 are fixed in order to produce predictable results).
 2. Generate the key (using the PBKDF2 function) from the given passphrase, salt, key size and number of iterations (for
 the salting process.
-3. Encrypt the plain text using key and IV.
+3. Encrypt the plaintext using key and IV.
 
 The decryption process is even simpler, because IV and salt have already been generated. These have to be reused to 
-successfully reproduce the plain text. Therefore, for successful encryption, you have to store IV, salt and
+successfully reproduce the plaintext. Therefore, for successful encryption, you have to store IV, salt and
 iteration count (as long as it is not fixed for your application) along with the cipher text. Since these parameters 
 don't need to get generated the decryption process only has 2 steps:
 
@@ -33,7 +33,7 @@ don't need to get generated the decryption process only has 2 steps:
 2.  Decrypt cipher text using key and IV.
 
 In this example, I have created a utility class for each language: `AesUtil.java` and `AesUtil.js`. In the test, all
-data (salt, passpharse, IV, plain text, ciphertext) are represented as String. The ciphertext is encoded using base64,
+data (salt, passpharse, IV, plaintext, ciphertext) are represented as String. The ciphertext is encoded using base64,
 in order to get a proper and compact representation of the bytes (AES produces a byte array, not a String). The other
 parameters, salt and IV are encoded in hex. This is useful to effectively count and read the number of bytes used
 (and see if the length of both parameters is correct).
@@ -103,5 +103,14 @@ The Java implementation looks a bit different, but the structure is the same:
 
             cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(hex(iv)));
             byte[] decrypted = cipher.doFinal(bytes);
+
+
+## Running the tests
+
+The project uses Maven as build environment. After cloning the repository, you just need to type:
+
+    #> mvn test
+    
+That executes both, the Java unit tests and the JavaScript Jasmine specs.
 
  [1]: http://code.google.com/p/crypto-js
