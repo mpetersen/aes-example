@@ -42,6 +42,7 @@ parameters, salt and IV are encoded in hex. This is useful to effectively count 
 
 1. Generate key:
 
+
       var key = CryptoJS.PBKDF2(
           passPhrase, 
           CryptoJS.enc.Hex.parse(salt),
