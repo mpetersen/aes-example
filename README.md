@@ -104,4 +104,13 @@ The Java implementation looks a bit different, but the structure is the same:
             cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(hex(iv)));
             byte[] decrypted = cipher.doFinal(bytes);
 
+
+## Running the tests
+
+The project uses Maven as build environment. After cloning the repository, you just need to type:
+
+    #> mvn test
+    
+That executes both, the Java unit tests and the JavaScript Jasmine specs.
+
  [1]: http://code.google.com/p/crypto-js
