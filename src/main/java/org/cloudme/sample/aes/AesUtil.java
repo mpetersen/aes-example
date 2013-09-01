@@ -37,38 +37,43 @@ public class AesUtil {
     
     public String encrypt(String salt, String iv, String passphrase, String plaintext) {
         try {
-            SecretKey key = generateKey(hex(salt), passphrase);
-            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(hex(iv)));
-            return base64(cipher.doFinal(plaintext.getBytes("UTF-8")));
+            SecretKey key = generateKey(salt, passphrase);
+            byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, iv, plaintext.getBytes("UTF-8"));
+            return base64(encrypted);
         }
-        catch (InvalidKeyException
-                | InvalidAlgorithmParameterException
-                | IllegalBlockSizeException
-                | BadPaddingException
-                | UnsupportedEncodingException e) {
+        catch (UnsupportedEncodingException e) {
             throw fail(e);
         }
     }
     
     public String decrypt(String salt, String iv, String passphrase, String ciphertext) {
         try {
-            SecretKey key = generateKey(hex(salt), passphrase);
-            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(hex(iv)));
-            return new String(cipher.doFinal(base64(ciphertext)), "UTF-8");
+            SecretKey key = generateKey(salt, passphrase);
+            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64(ciphertext));
+            return new String(decrypted, "UTF-8");
         }
-        catch (InvalidKeyException
-                | InvalidAlgorithmParameterException
-                | IllegalBlockSizeException
-                | BadPaddingException
-                | UnsupportedEncodingException e) {
+        catch (UnsupportedEncodingException e) {
             throw fail(e);
         }
     }
     
-    private SecretKey generateKey(byte[] salt, String passphrase) {
+    private byte[] doFinal(int encryptMode, SecretKey key, String iv, byte[] bytes) {
+        try {
+            cipher.init(encryptMode, key, new IvParameterSpec(hex(iv)));
+            return cipher.doFinal(bytes);
+        }
+        catch (InvalidKeyException
+                | InvalidAlgorithmParameterException
+                | IllegalBlockSizeException
+                | BadPaddingException e) {
+            throw fail(e);
+        }
+    }
+    
+    private SecretKey generateKey(String salt, String passphrase) {
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), salt, iterationCount, keySize);
+            KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt), iterationCount, keySize);
             SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
             return key;
         }
@@ -99,7 +104,7 @@ public class AesUtil {
         return DatatypeConverter.parseHexBinary(str);
     }
     
-    private IllegalStateException fail(Exception e) throws RuntimeException {
+    private IllegalStateException fail(Exception e) {
         return new IllegalStateException(e);
     }
 }
