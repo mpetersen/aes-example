@@ -52,33 +52,33 @@ parameters, salt and IV are encoded in hex. This is useful to effectively count 
 
 2. Encrypt plaintext:
 
-The object returned by the `encrypt` method is not a String, but a object that contains the parameters of the algorithm 
-and the ciphertext.
+    The object returned by the `encrypt` method is not a String, but a object that contains the parameters of the algorithm 
+    and the ciphertext.
+    
+          var encrypted = CryptoJS.AES.encrypt(
+              plainText,
+              key,
+              { iv: CryptoJS.enc.Hex.parse(iv) });
 
-      var encrypted = CryptoJS.AES.encrypt(
-          plainText,
-          key,
-          { iv: CryptoJS.enc.Hex.parse(iv) });
-
-To convert the encryption result into base64 format, you have to use the `toString()` function:
-
-      var ciphertext = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+    To convert the encryption result into base64 format, you have to use the `toString()` function:
+    
+          var ciphertext = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
 
 3. Decrypt ciphertext:
 
-To decrypt, a parameter object is created first, that contains the ciphertext (note base64 encoding is used here):
-
-      var cipherParams = CryptoJS.lib.CipherParams.create({
-        ciphertext: CryptoJS.enc.Base64.parse(cipherText)
-      });
-      var decrypted = CryptoJS.AES.decrypt(
-          cipherParams,
-          key,
-          { iv: CryptoJS.enc.Hex.parse(iv) });
-
-Again, to get the result in text form, you use the `toString()` function:
-
-      var plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+    To decrypt, a parameter object is created first, that contains the ciphertext (note base64 encoding is used here):
+    
+          var cipherParams = CryptoJS.lib.CipherParams.create({
+            ciphertext: CryptoJS.enc.Base64.parse(cipherText)
+          });
+          var decrypted = CryptoJS.AES.decrypt(
+              cipherParams,
+              key,
+              { iv: CryptoJS.enc.Hex.parse(iv) });
+    
+    Again, to get the result in text form, you use the `toString()` function:
+    
+          var plaintext = decrypted.toString(CryptoJS.enc.Utf8);
 
 ## Java implementation `AesUtil.java`
 
