@@ -1,95 +1,107 @@
 Interoperable AES encryption with Java and JavaScript
 =====================================================
 
-In this post I will write about AES encryption and how to implement it interoperable between Java and JavaScript. For 
-JavaScript I will use the [CryptoJS][1] library. I will not describe the AES algorithm in detail. Please use other 
-sources for this.
+AES implementations are available in many languages, including Java and JavaScript. In Java, the `javax.crypto.*` 
+packages are part of the standard, and in JavaScript, the excellent [CryptoJS][1] provides an implementation for many 
+cryptographic algorithms. However, due to different default settings and various implementation details, it is not 
+trivial to use the APIs in a way, that the result is the same on all platforms.
 
-Anyhow, let's start with the basics. The idea is, to encrypt a plaintext using a passphrase. However, for AES, more 
-than that is required, you need:
+This example demonstrates implementations of the algorithm in Java and JavaScript that produces identical results using
+passphrase based encryption. For AES encryption, you cannot - or shouldn't - simply use a password in order to encrypt
+data. Instead, many parameters need to be defined, such as:
 
-*   a salt to generate the encryption key from the passphrase
-*   the iteration count used during the salting process (here: fixed to 10000)
-*   the padding mode (here: PKCS5) and a function to derive the key from a password (here: PBKDF2)
-*   the initialization vector (IV)
-*   the key length (here: 128bit)
+* iteration count used for the salting process
+* padding mode
+* key derivation function
+* key length
 
-Salt and IV are generated from a random number generator. This means, that both must be saved together with the 
-ciphertext in order to be able to decrypt it later.
+Then, additional initialization parameters need to be defined, such as the salt and the initialization vector (IV). With
+all parameters defined, the encryption process is the same for both, Java and JavaScript:
 
-The encryption process requires 4 steps:
+1. Generate salt and IV (this is typically done using a secure psuedo-random number generator; in my example tests both
+are fixed in order to produce predictable results).
+2. Generate the key (using the PBKDF2 function) from the given passphrase, salt, key size and number of iterations (for
+the salting process.
+3. Encrypt the plain text using key and IV.
 
-1.  Generate salt.
-3.  Generate IV.
-2.  Generate key using PBKDF2, passphrase, salt and the given key size and number of iterations (for the salting 
-process).
-4.  Encrypt the plain text using key and IV.
-
-The decryption process is even simpler, because IV and salt have already been created (and have to be reused):
+The decryption process is even simpler, because IV and salt have already been generated. These have to be reused to 
+successfully reproduce the plain text. Therefore, for successful encryption, you have to store IV, salt and
+iteration count (as long as it is not fixed for your application) along with the cipher text. Since these parameters 
+don't need to get generated the decryption process only has 2 steps:
 
 1.  Generate key (same as step 2. above).
 2.  Decrypt cipher text using key and IV.
 
-## JavaScript
+In this example, I have created a utility class for each language: `AesUtil.java` and `AesUtil.js`. In the test, all
+data (salt, passpharse, IV, plain text, ciphertext) are represented as String. The ciphertext is encoded using base64,
+in order to get a proper and compact representation of the bytes (AES produces a byte array, not a String). The other
+parameters, salt and IV are encoded in hex. This is useful to effectively count and read the number of bytes used
+(and see if the length of both parameters is correct).
 
-Let's start with the JavaScript implementation:
+## JavaScript implementation `AesUtil.js`
 
-        var salt = CryptoJS.lib.WordArray.random(16);
-        var iv = CryptoJS.lib.WordArray.random(128/32);
-        var key = CryptoJS.PBKDF2(password, salt, { keySize: 128/32, iterations: 10000 });
-        var encrypted = CryptoJS.AES.encrypt(plaintext, key, { iv: iv });    
+1. Generate key:
 
-CryptoJS [returns an object][2], that contains the `key`, `iv`, `salt` and the `ciphertext`. The `ciphertext` is not a 
-String, but a `WordArray` and you should convert it into text form before saving it, for example to Base64:
+      var key = CryptoJS.PBKDF2(
+          passPhrase, 
+          CryptoJS.enc.Hex.parse(salt),
+          { keySize: this.keySize, iterations: this.iterationCount });
 
-        var ciphertext64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
-    
+> Note, that `this.keySize` is the size of the key in 4-byte blocks. So, if you want to use a 128-bit key, you have to 
+divide the number of bits by 32 to get the key size used for CryptoJS.
 
-To decrypt the ciphertext, again the key is created and then the decryption function called:
+2. Encrypt plaintext:
 
-        var key = CryptoJS.PBKDF2(password, salt, { keySize: 128/32, iterations: 10000 });
-        var cipherParams = CryptoJS.lib.CipherParams.create({
-            ciphertext: CryptoJS.enc.Base64.parse(ciphertext64)
-        });
-        return CryptoJS.AES.decrypt(cipherParams, key, { iv: iv }).toString(CryptoJS.enc.Utf8);
-    
+The object returned by the `encrypt` method is not a String, but a object that contains the parameters of the algorithm 
+and the ciphertext.
 
-## Java
+      var encrypted = CryptoJS.AES.encrypt(
+          plainText,
+          key,
+          { iv: CryptoJS.enc.Hex.parse(iv) });
 
-The Java implementation looks quite different, but takes the same steps, except that the `Cipher` generates the IV and 
-we need to get it, instead of passing a random IV to the algorithm:
+To convert the encryption result into base64 format, you have to use the `toString()` function:
 
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-    
-        // Generate salt
-        Random random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-    
-        // Generate key
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 10000, 128);
-        SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-    
-        // Get IV from cipher
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        AlgorithmParameters params = cipher.getParameters();
-        byte[] iv = params.getParameterSpec(IvParameterSpec.class).getIV();
-    
-        // Encrypt
-        byte[] cipherText = cipher.doFinal(text.getBytes("UTF-8"));
-    
+      var ciphertext = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
 
-Decryption is again a little bit simpler, because most parameters have already been created:
+3. Decrypt ciphertext:
 
-        // Generate key
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 10000, 128);
-        SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-    
-        // Decrypt
-        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        String plainText = new String(cipher.doFinal(cipherText), "UTF-8");
+To decrypt, a parameter object is created first, that contains the ciphertext (note base64 encoding is used here):
+
+      var cipherParams = CryptoJS.lib.CipherParams.create({
+        ciphertext: CryptoJS.enc.Base64.parse(cipherText)
+      });
+      var decrypted = CryptoJS.AES.decrypt(
+          cipherParams,
+          key,
+          { iv: CryptoJS.enc.Hex.parse(iv) });
+
+Again, to get the result in text form, you use the `toString()` function:
+
+      var plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+
+## Java implementation `AesUtil.java`
+
+The Java implementation looks a bit different, but the structure is the same:
+
+1. Create a `cipher` instance:
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+2. Generate key:
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt), iterationCount, keySize);
+            SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+
+3. Encrypt:
+
+            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(hex(iv)));
+            byte[] encrypted = cipher.doFinal(bytes);
+
+4. Decrypt:
+
+            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(hex(iv)));
+            byte[] decrypted = cipher.doFinal(bytes);
 
  [1]: http://code.google.com/p/crypto-js
- [2]: http://code.google.com/p/crypto-js/#The_Cipher_Output

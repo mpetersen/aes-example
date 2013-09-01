@@ -4,10 +4,11 @@ var AesUtil = function(keySize, iterationCount) {
 };
 
 AesUtil.prototype.generateKey = function(salt, passPhrase) {
-  return CryptoJS.PBKDF2(
+  var key = CryptoJS.PBKDF2(
       passPhrase, 
       CryptoJS.enc.Hex.parse(salt),
       { keySize: this.keySize, iterations: this.iterationCount });
+  return key;
 }
 
 AesUtil.prototype.encrypt = function(salt, iv, passPhrase, plainText) {
