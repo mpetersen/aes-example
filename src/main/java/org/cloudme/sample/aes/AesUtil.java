@@ -17,8 +17,12 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+
+// TODO: Implement 256-bit version like: http://securejava.wordpress.com/2012/10/25/aes-256/
 public class AesUtil {
     private final int keySize;
     private final int iterationCount;
@@ -89,19 +93,24 @@ public class AesUtil {
     }
     
     public static String base64(byte[] bytes) {
-        return DatatypeConverter.printBase64Binary(bytes);
+        return Base64.encodeBase64String(bytes);
     }
     
     public static byte[] base64(String str) {
-        return DatatypeConverter.parseBase64Binary(str);
+        return Base64.decodeBase64(str);
     }
     
     public static String hex(byte[] bytes) {
-        return DatatypeConverter.printHexBinary(bytes);
+        return Hex.encodeHexString(bytes);
     }
     
     public static byte[] hex(String str) {
-        return DatatypeConverter.parseHexBinary(str);
+        try {
+            return Hex.decodeHex(str.toCharArray());
+        }
+        catch (DecoderException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
     private IllegalStateException fail(Exception e) {
