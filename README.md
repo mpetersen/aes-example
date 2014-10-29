@@ -69,7 +69,7 @@ parameters, salt and IV are encoded in hex. This is useful to effectively count 
     To decrypt, a parameter object is created first, that contains the ciphertext (note base64 encoding is used here):
     
           var cipherParams = CryptoJS.lib.CipherParams.create({
-            ciphertext: CryptoJS.enc.Base64.parse(cipherText)
+            ciphertext: CryptoJS.enc.Base64.parse(ciphertext)
           });
           var decrypted = CryptoJS.AES.decrypt(
               cipherParams,
