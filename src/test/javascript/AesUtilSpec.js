@@ -26,12 +26,12 @@ var cipherText = "/AFfJyswH99yaf/Zr8aTr9gmnhkskf2VGW1iYe14nLzoF9SFF1u4b3N3ebZeiS
 
 describe("AesUtil", function() {
   it("encrypts", function() {
-    var aesUtil = new AesUtil(keySize, iterationCount)
+    var aesUtil = new AesUtil(keySize, iterationCount);
     var encrypt = aesUtil.encrypt(salt, iv, passPhrase, plainText);
     expect(encrypt).toBe(cipherText);
   });
   it("decrypts", function() {
-    var aesUtil = new AesUtil(keySize, iterationCount)
+    var aesUtil = new AesUtil(keySize, iterationCount);
     var decrypt = aesUtil.decrypt(salt, iv, passPhrase, cipherText);
     expect(decrypt).toBe(plainText);
   });

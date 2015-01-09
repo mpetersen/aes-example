@@ -113,4 +113,16 @@ The project uses Maven as build environment. After cloning the repository, you j
     
 That executes both, the Java unit tests and the JavaScript Jasmine specs.
 
+## Browser example
+
+To run a simple example to encrypt a text in the browser and send it to a servlet, you just need to run:
+
+    #> mvn jetty:run
+    
+Then open [http://localhost:8080][2]. The example encrypts a text using a password, which is then sent to
+the server. The request contains everything required to encrypt the password, such as salt, IV, iteration count,
+and the passphrase. In the real world, you need to pass all these to the server, except passphrase, of 
+course. 
+
  [1]: http://code.google.com/p/crypto-js
+ [2]: http://localhost:8080
