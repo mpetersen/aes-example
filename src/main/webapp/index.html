@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AES Example</title>
+</head>
+<body>
+<h1>AES Example</h1>
+<div>
+<textarea id="plaintext" placeholder="Enter plain text here."></textarea>
+</div>
+<div>
+<input id="passphrase" type="password" placeholder="passphrase"/>
+</div>
+<div>
+<button>Encrypt</button>
+</div>
+<div id="result"></div>
+<script type="text/javascript" src="js/lib/excluded/jquery-2.1.3.min.js"></script>
+<script type="text/javascript" src="js/lib/aes.js"></script>
+<script type="text/javascript" src="js/lib/pbkdf2.js"></script>
+<script type="text/javascript" src="js/AesUtil.js"></script>
+<script type="text/javascript">
+$(function(){
+  var iterationCount = 1000;
+  var keySize = 128;
+  $('button').click(function() {
+    var plaintext = $('#plaintext').val();
+    var passphrase = encodeURIComponent($('#passphrase').val());
+    
+    var iv = CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
+    var salt = CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
+    
+    var aesUtil = new AesUtil(keySize, iterationCount);
+    var ciphertext = aesUtil.encrypt(salt, iv, passphrase, plaintext);
+    
+    $.get('/aes', {
+      passphrase: passphrase,
+      iv: iv,
+      salt: salt,
+      ciphertext: ciphertext,
+      iterationCount: iterationCount,
+      keySize: keySize
+    }, function(data) {
+      alert('Plaintext: ' + data);
+    });
+  });
+});
+</script>
+</body>
+</html>
